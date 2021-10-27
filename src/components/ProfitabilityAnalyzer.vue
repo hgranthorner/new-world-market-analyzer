@@ -39,10 +39,16 @@
       <p>Profitable? {{ valueCreated(recipe) > ingredientsCost(recipe) }}</p>
 
       <div>
-        Value: {{ this.valueCreated(recipe) }}
+        Value: {{ valueCreated(recipe) }}
       </div>
       <div>
-        Cost: {{ this.ingredientsCost(recipe) }}
+        Cost: {{ ingredientsCost(recipe) }}
+      </div>
+      <div>
+        Profit: {{ valueCreated(recipe) - ingredientsCost(recipe) }}
+      </div>
+      <div>
+        Profit Per Unit: {{ (valueCreated(recipe) - ingredientsCost(recipe)) / recipe.quantity }}
       </div>
       <hr>
     </li>
@@ -80,6 +86,20 @@
       <button @click="saveNewRecipe">Save</button>
     </li>
   </ul>
+  <table>
+    <tr>
+      <th>Desired Quantity</th>
+      <th>Craft Quantity</th>
+      <th>Profit</th>
+      <th>Profit Per Unit</th>
+    </tr>
+    <tr v-for="recipe in createTestRecipes">
+      <td>{{ recipe.quantity}}</td>
+      <td>{{ craftQuantity(recipe).toFixed(2)}}</td>
+      <td>{{ (valueCreated(recipe) - ingredientsCost(recipe)).toFixed(2) }}</td>
+      <td>{{ ((valueCreated(recipe) - ingredientsCost(recipe)) / recipe.quantity).toFixed(2) }}</td>
+    </tr>
+  </table>
 </template>
 
 <script lang="ts">
@@ -93,12 +113,19 @@ export default defineComponent({
       recipes,
       newRecipe: {
         name: "",
+        bonusQuantityModifier: 0,
         cost: 0,
         quantity: 0,
         ingredients: [],
       } as Recipe,
       tax: 0,
       bonusMultiplier: .27
+    }
+  },
+  computed: {
+    createTestRecipes(): Recipe[] {
+      return new Array(100).fill(null)
+          .map((_, i) => ({...this.recipes[0], quantity: i}))
     }
   },
   created() {
@@ -109,7 +136,7 @@ export default defineComponent({
   },
   methods: {
     craftQuantity(r: Recipe) {
-      return Math.ceil(r.quantity / (1 + this.bonusMultiplier))
+      return Math.ceil(r.quantity / (1 + this.bonusMultiplier + r.bonusQuantityModifier))
     },
 
     valueCreated(recipe: Recipe) {
@@ -123,7 +150,7 @@ export default defineComponent({
     },
 
     ingredientQuantity(recipe: Recipe, ingredient: Ingredient) {
-      return Math.ceil(recipe.quantity / (1 + this.bonusMultiplier)) * ingredient.quantity
+      return Math.ceil(recipe.quantity / (1 + this.bonusMultiplier + recipe.bonusQuantityModifier)) * ingredient.quantity
     },
 
     addIngredientToNewRecipe() {
@@ -134,13 +161,15 @@ export default defineComponent({
       this.recipes.push(this.newRecipe)
       this.newRecipe = {
         name: "",
+        bonusQuantityModifier: 0,
         cost: 0,
         quantity: 0,
         ingredients: [],
       }
 
       window.localStorage.setItem("recipes", JSON.stringify(this.recipes))
-    }
+    },
+
   }
 })
 </script>

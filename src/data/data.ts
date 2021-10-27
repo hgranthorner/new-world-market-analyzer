@@ -1,5 +1,5 @@
 export type Ingredient = {
-    name: string
+    name: string;
     cost: number;
     quantity: number;
 }
@@ -7,7 +7,8 @@ export type Ingredient = {
 export type Recipe = {
     name: string;
     cost: number;
-    quantity: number
+    bonusQuantityModifier: number;
+    quantity: number;
     ingredients: Ingredient[];
 }
 
@@ -15,6 +16,7 @@ export const recipes: Recipe[] = [
     {
         name: 'Coarse Leather',
         quantity: 1,
+        bonusQuantityModifier: 0,
         ingredients: [
             {
 
